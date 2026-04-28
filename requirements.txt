@@ -25,3 +25,4 @@ pydantic
 aiohttp
 loguru
 flask
+gunicorn

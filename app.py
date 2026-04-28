@@ -5,8 +5,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.agent import get_siggy_response
+from src.knowledge import get_ritual_knowledge_tool
 
 app = Flask(__name__)
+
+# Eagerly initialize the HuggingFace model during server boot.
+# This prevents the first user request from timing out (100s limit on Railway) 
+# while the 130MB model downloads.
+print("Pre-loading HuggingFace Embedding Model...")
+get_ritual_knowledge_tool()
+print("Model loaded successfully!")
 
 @app.route('/')
 def index():

@@ -1,7 +1,7 @@
 import os
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageContext, load_index_from_storage
 from llama_index.llms.groq import Groq
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.core.postprocessor import SimilarityPostprocessor
@@ -14,8 +14,8 @@ class RitualKnowledgeBase:
         self.docs_path = docs_path
         self.persist_dir = persist_dir
         self.llm = Groq(model="llama-3.3-70b-versatile", api_key=os.getenv("GROQ_API_KEY"))
-        # FastEmbed uses ONNX runtime, taking ~80MB RAM instead of >500MB (PyTorch), preventing Railway OOM crashes.
-        self.embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        # Using a slightly larger but still lightweight embedding model for better accuracy
+        self.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
         
         self.index = self._get_index()
         # similarity_top_k=5 for more context

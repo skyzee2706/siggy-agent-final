@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siggy - Ritual Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --chat-bg: #15181e;
+            --accent: #00ffcc;
+            --accent-glow: rgba(0, 255, 204, 0.3);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --bot-msg-bg: #1e222a;
+            --user-msg-bg: #1a2a2a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background-color: var(--chat-bg);
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5), 0 0 15px var(--accent-glow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 204, 0.1);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(30,34,42,1) 0%, rgba(21,24,30,1) 100%);
+            border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: var(--bg-color);
+            font-size: 20px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .header-info h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .header-info p {
+            margin: 4px 0 0;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background-color: var(--bot-msg-bg);
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--user-msg-bg);
+            border-bottom-right-radius: 4px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            color: var(--accent);
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background-color: var(--bot-msg-bg);
+            border-top: 1px solid rgba(0, 255, 204, 0.1);
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0,0,0,0.2);
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        button {
+            padding: 0 24px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--accent);
+            color: var(--bg-color);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: var(--bot-msg-bg);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            display: flex;
+            gap: 5px;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: bounce 1.5s infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="avatar">S</div>
+            <div class="header-info">
+                <h1>Siggy</h1>
+                <p>Status: ONLINE | RITUAL NETWORK</p>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot">
+                Hey, I'm Siggy. Built on Ritual, trained to know it inside out. Crypto, Web3, nodes, EVM++ — ask me anything. If you're new here, feel free to introduce yourself!
+            </div>
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="loading">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Message Siggy..." autocomplete="off" onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        function appendMessage(sender, text) {
+            // Remove typing indicator from flow temporarily
+            messagesContainer.removeChild(typingIndicator);
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            msgDiv.textContent = text;
+            messagesContainer.appendChild(msgDiv);
+            
+            // Re-append typing indicator at the end
+            messagesContainer.appendChild(typingIndicator);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage('user', text);
+            userInput.value = '';
+            
+            typingIndicator.style.display = 'flex';
+            scrollToBottom();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                const data = await response.json();
+                typingIndicator.style.display = 'none';
+                
+                if (data.error) {
+                    appendMessage('bot', `Error: ${data.error}`);
+                } else {
+                    appendMessage('bot', data.response);
+                }
+            } catch (error) {
+                typingIndicator.style.display = 'none';
+                appendMessage('bot', `Connection error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

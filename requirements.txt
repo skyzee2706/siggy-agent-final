@@ -1,0 +1,27 @@
+# Core AI
+langchain
+langchain-core
+langchain-classic
+langchain-groq
+langchain-community
+llama-index
+llama-index-llms-groq
+llama-index-embeddings-huggingface
+python-dotenv
+
+# Discord
+discord.py
+
+# Tools
+ccxt
+requests
+beautifulsoup4
+duckduckgo-search
+pandas
+yfinance
+
+# Utils
+pydantic
+aiohttp
+loguru
+flask

@@ -42,7 +42,7 @@ storage/
 # ============================================
 # GENERATED DATA
 # ============================================
-contacts.csv
+
 
 # ============================================
 # TEST & DEBUG FILES
@@ -54,10 +54,6 @@ test_*.log
 verify_persona.py
 show_rag.py
 
-# ============================================
-# OTHER PROJECT DIRECTORIES (not part of submission)
-# ============================================
-siggy-ritual-agent/
 
 # ============================================
 # IDE & EDITORS

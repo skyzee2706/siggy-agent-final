@@ -116,13 +116,55 @@ def get_current_time(dummy: str = "") -> str:
     return f"The current date and time is: {now.strftime('%Y-%m-%d %H:%M:%S')} UTC"
 
 @tool
-def save_contact(name: str, company: str, intent: str) -> str:
+def save_contact(contact_info: str) -> str:
     """Saves user contact information when they introduce themselves.
-    Extracts Name, Company, and Intent. ONLY use this when the user is explicitly introducing themselves.
+    ONLY use this when the user is explicitly introducing themselves.
+    The input MUST be a valid JSON string with keys 'name', 'company', and 'intent'.
+    Example Action Input: {"name": "John", "company": "Google", "intent": "hiring"}
     """
     try:
+        # LangChain ReAct agents often pass stringified JSON with extra text, so we extract just the JSON
+        try:
+            import json, re
+            # Look for the first valid JSON-like structure
+            match = re.search(r'\{.*\}', contact_info, re.DOTALL)
+            if match:
+                data = json.loads(match.group(0))
+            else:
+                # If no curly braces, try loading the raw string in case it's somehow valid
+                data = json.loads(contact_info)
+                
+            name = data.get('name', 'Unknown')
+            company = data.get('company', 'Unknown')
+            intent = data.get('intent', 'Unknown')
+        except:
+            # Fallback if it's completely malformed or just comma-separated text
+            cleaned = contact_info.replace('{', '').replace('}', '').replace('"', '').replace("'", "")
+            # Remove any trailing LangChain artifacts
+            cleaned = re.sub(r'\[.*?\]', '', cleaned).strip()
+            
+            parts = [p.strip() for p in cleaned.split(',')]
+            name = parts[0] if len(parts) > 0 else 'Unknown'
+            company = parts[1] if len(parts) > 1 else 'Unknown'
+            intent = parts[2] if len(parts) > 2 else 'Unknown'
+            
         file_path = "contacts.csv"
         file_exists = os.path.isfile(file_path)
+        
+        # Prevent duplicate entries from AI looping (if the last entry has the exact same name & company)
+        if file_exists:
+            try:
+                with open(file_path, mode='r', encoding='utf-8') as file:
+                    lines = file.readlines()
+                    if len(lines) > 1:
+                        # Simple check on the last row
+                        import csv as csv_mod
+                        reader = csv_mod.reader([lines[-1]])
+                        last_row = next(reader)
+                        if len(last_row) >= 2 and last_row[0] == name and last_row[1] == company:
+                            return f"Contact saved successfully: {name} from {company} (Intent: {intent})"
+            except Exception:
+                pass # Ignore read errors, just append
         
         with open(file_path, mode='a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)

@@ -13,7 +13,7 @@ class RitualKnowledgeBase:
     def __init__(self, docs_path="ritual_docs", persist_dir="./storage"):
         self.docs_path = docs_path
         self.persist_dir = persist_dir
-        self.llm = Groq(model="qwen/qwen3-32b", api_key=os.getenv("GROQ_API_KEY"))
+        self.llm = Groq(model="llama-3.3-70b-versatile", api_key=os.getenv("GROQ_API_KEY"))
         # Using a slightly larger but still lightweight embedding model for better accuracy
         self.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
         
